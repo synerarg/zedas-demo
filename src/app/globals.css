@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
+/* Manual dark mode driven by a `.dark` class on <html> (toggle + system default
+   resolved by the no-FOUC script in layout.tsx). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens ──────────────────────────────────────────────────────────
+   Single source of truth. Swap the palette here in one edit. Neutral cool-water
+   surfaces; one teal accent. The boldness lives in the Zedas Score colors. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: #eef3f6; /* page / ocean behind the map */
+  --surface: #ffffff; /* panels */
+  --surface-2: #eef2f5; /* insets, hover */
+  --foreground: #16212b; /* ink — not pure black */
+  --muted: #586672;
+  --border: #dbe3e9;
+  --ring: #0f766e;
+  --accent: #0f766e;
+  --accent-foreground: #ffffff;
+
+  /* Zedas Score categorical (max hue separation; AA-paired with labels). */
+  --score-hq: #0f766e; /* High Availability – High Quality */
+  --score-qc: #d4a017; /* High Availability – Quality Constrained */
+  --score-eff: #2f6fb0; /* Low Availability – High Efficiency */
+  --score-risk: #b23a48; /* High Risk – Restricted Use */
+
+  --no-data: #d8dce0;
+  --map-stroke: #c4cdd5;
+  --map-stroke-strong: #8a99a6;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #0b1117;
+  --surface: #131c25;
+  --surface-2: #1b2530;
+  --foreground: #e7edf2;
+  --muted: #93a2af;
+  --border: #27323d;
+  --ring: #2dd4bf;
+  --accent: #19a89b; /* desaturated tonal teal, not an invert */
+  --accent-foreground: #04110f;
+
+  --score-hq: #16a394;
+  --score-qc: #e0b23f;
+  --score-eff: #4b8fd4;
+  --score-risk: #d05a68;
+
+  --no-data: #2a2f36;
+  --map-stroke: #313c46;
+  --map-stroke-strong: #5a6976;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-score-hq: var(--score-hq);
+  --color-score-qc: var(--score-qc);
+  --color-score-eff: var(--score-eff);
+  --color-score-risk: var(--score-risk);
+  --color-no-data: var(--no-data);
+
+  /* Single typeface across the whole project: Geist, used everywhere. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* z-index scale (documented, single place) */
+  --z-map: 0;
+  --z-chrome: 10;
+  --z-drawer: 30;
+  --z-overlay: 40;
+  --z-modal: 41;
+  --z-tooltip: 60;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    /* Single typeface (Geist) for the whole document; everything inherits. */
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Visible focus everywhere; never a bare outline:none. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Modal / drawer motion — transform + opacity only. Honors reduced motion. */
+@keyframes zd-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes zd-modal-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes zd-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes zd-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes zd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.zd-rise {
+  animation: zd-rise 260ms ease-out both;
+}
+
+@keyframes zd-tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.zd-tip-in {
+  animation: zd-tip-in 120ms ease-out;
+}
+
+[data-zd-overlay][data-state="open"] {
+  animation: zd-overlay-in 200ms ease-out;
+}
+[data-zd-modal][data-state="open"] {
+  animation: zd-sheet-in 240ms ease-out;
+}
+@media (min-width: 640px) {
+  [data-zd-modal][data-state="open"] {
+    animation: zd-modal-in 220ms ease-out;
+  }
+}
+[data-zd-drawer][data-state="open"] {
+  animation: zd-drawer-in 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
