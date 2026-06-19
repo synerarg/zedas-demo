@@ -115,6 +115,21 @@
   .tnum {
     font-variant-numeric: tabular-nums;
   }
+  /* Anything interactive gets the pointer cursor; disabled controls signal it. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="switch"],
+  [role="radio"],
+  [role="option"],
+  a[href],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* Modal / drawer motion — transform + opacity only. Honors reduced motion. */
@@ -129,7 +144,8 @@
 @keyframes zd-modal-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.96);
+    /* A small settle from just below — clean, no sideways or origin tricks. */
+    transform: translate(-50%, calc(-50% + 10px)) scale(0.97);
   }
   to {
     opacity: 1;
@@ -182,14 +198,14 @@
 }
 
 [data-zd-overlay][data-state="open"] {
-  animation: zd-overlay-in 200ms ease-out;
+  animation: zd-overlay-in 180ms ease-out;
 }
 [data-zd-modal][data-state="open"] {
-  animation: zd-sheet-in 240ms ease-out;
+  animation: zd-sheet-in 240ms var(--ease-out-expo);
 }
 @media (min-width: 640px) {
   [data-zd-modal][data-state="open"] {
-    animation: zd-modal-in 220ms ease-out;
+    animation: zd-modal-in 260ms var(--ease-out-expo);
   }
 }
 [data-zd-drawer][data-state="open"] {

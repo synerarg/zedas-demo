@@ -1,15 +1,16 @@
 import Reveal from "./reveal";
 import { Container, Eyebrow } from "./primitives";
 import { COUNTRIES } from "@/lib/zedas-data";
+import PilotMap from "./pilot-map";
 
 const REGION_ORDER = ["Latin America", "Africa", "Asia"] as const;
 
 export default function Pilot() {
   // Grounded in the live dataset (src/lib/zedas-data.ts) — the same 16 countries
-  // the map colors, grouped by region.
+  // the map colors, counted by region.
   const byRegion = REGION_ORDER.map((region) => ({
     region,
-    countries: COUNTRIES.filter((c) => c.region === region).map((c) => c.name),
+    count: COUNTRIES.filter((c) => c.region === region).length,
   }));
 
   return (
@@ -36,29 +37,32 @@ export default function Pilot() {
         </Reveal>
 
         <Reveal
-          as="ul"
-          stagger={0.06}
-          className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-3"
+          delay={0.05}
+          className="mt-12 overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-6"
         >
-          {byRegion.map(({ region, countries }) => (
-            <li key={region} className="bg-surface p-6 sm:p-7">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-                  {region}
-                </h3>
-                <span className="tnum text-xs text-muted">
-                  {countries.length}
-                </span>
-              </div>
-              <ul className="mt-4 flex flex-col gap-2">
-                {countries.map((name) => (
-                  <li key={name} className="text-[15px] leading-snug text-muted">
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+          <PilotMap />
+
+          {/* Region breakdown, kept as a compact legend under the map. */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-4 text-sm">
+            <span className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+                style={{ backgroundColor: "var(--accent)" }}
+              />
+              <span className="font-medium text-foreground">
+                16 pilot countries
+              </span>
+            </span>
+            {byRegion.map(({ region, count }) => (
+              <span key={region} className="text-muted">
+                <span className="tnum font-semibold text-foreground">
+                  {count}
+                </span>{" "}
+                {region}
+              </span>
+            ))}
+          </div>
         </Reveal>
       </Container>
     </section>

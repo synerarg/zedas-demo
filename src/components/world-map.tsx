@@ -15,7 +15,6 @@ import {
   type Indicator,
 } from "@/lib/zedas-data";
 import {
-  FLAGS,
   MAP_COLORS,
   MAP_WIDTH,
   MAP_HEIGHT,
@@ -24,6 +23,7 @@ import {
   MAX_ZOOM,
   TRANSLATE_EXTENT,
 } from "@/lib/layers";
+import Flag from "./flag";
 
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -39,6 +39,14 @@ interface WorldMapProps {
   position: MapPosition;
   onPositionChange: (p: MapPosition) => void;
   onSelectCountry: (isoN: number) => void;
+  /** ISO-numeric of the country whose detail is currently open (gets a ring). */
+  selectedIsoN?: number | null;
+  /** When true, clicking a country adds/removes it from comparison. */
+  selectMode?: boolean;
+  /** Countries currently in the comparison set (get an accent ring). */
+  comparedIsoNs?: number[];
+  /** Comparison is at the country cap (used for select-mode tooltip copy). */
+  comparisonFull?: boolean;
 }
 
 interface Hovered {
@@ -52,6 +60,10 @@ export default function WorldMap({
   position,
   onPositionChange,
   onSelectCountry,
+  selectedIsoN,
+  selectMode = false,
+  comparedIsoNs,
+  comparisonFull = false,
 }: WorldMapProps) {
   const [hovered, setHovered] = useState<Hovered | null>(null);
   const colors = MAP_COLORS[theme];
@@ -122,6 +134,17 @@ export default function WorldMap({
               geographies.map((geo) => {
                 const country = getCountryByGeoId(geo.id);
                 const isPilot = Boolean(country);
+                const isSelected =
+                  isPilot && country!.isoN === selectedIsoN;
+                const isCompared =
+                  isPilot && !!comparedIsoNs?.includes(country!.isoN);
+                // Compared countries get an accent ring; the open-detail
+                // country a neutral strong ring. Compared wins if both.
+                const ring = isCompared
+                  ? { color: "var(--accent)", width: 1.7 }
+                  : isSelected
+                    ? { color: colors.strokeStrong, width: 1.4 }
+                    : null;
                 const fill = country
                   ? indicatorColor(indicator, country)
                   : colors.noData;
@@ -148,34 +171,49 @@ export default function WorldMap({
                       placeTooltip();
                     }}
                     onMouseLeave={() => setHovered(null)}
-                    onClick={() => country && onSelectCountry(country.isoN)}
+                    onClick={() => {
+                      if (!country) return;
+                      // Clear the hover card the instant we commit to a click so
+                      // it never lingers over the opening modal.
+                      setHovered(null);
+                      onSelectCountry(country.isoN);
+                    }}
                     onKeyDown={(e) => {
                       if (country && (e.key === "Enter" || e.key === " ")) {
                         e.preventDefault();
+                        setHovered(null);
                         onSelectCountry(country.isoN);
                       }
                     }}
                     style={{
+                      // The ring must show in every state — react-simple-maps
+                      // renders `hover`/`pressed` while the pointer is over the
+                      // path, which is exactly the moment right after a click.
                       default: {
                         fill,
-                        stroke: colors.stroke,
-                        strokeWidth: 0.4,
+                        stroke: ring ? ring.color : colors.stroke,
+                        strokeWidth: ring ? ring.width : 0.4,
                         outline: "none",
                         cursor: isPilot ? "pointer" : "default",
-                        transition: "fill 150ms ease-out",
+                        transition:
+                          "fill 150ms ease-out, stroke 200ms ease-out, stroke-width 200ms ease-out",
                       },
                       hover: {
                         fill,
-                        stroke: isPilot ? colors.strokeStrong : colors.stroke,
-                        strokeWidth: isPilot ? 0.9 : 0.4,
+                        stroke: ring
+                          ? ring.color
+                          : isPilot
+                            ? colors.strokeStrong
+                            : colors.stroke,
+                        strokeWidth: ring ? ring.width : isPilot ? 0.9 : 0.4,
                         outline: "none",
                         cursor: isPilot ? "pointer" : "default",
                         filter: isPilot ? "brightness(1.06)" : undefined,
                       },
                       pressed: {
                         fill,
-                        stroke: colors.strokeStrong,
-                        strokeWidth: 1,
+                        stroke: ring ? ring.color : colors.strokeStrong,
+                        strokeWidth: ring ? ring.width : 1,
                         outline: "none",
                       },
                     }}
@@ -192,14 +230,12 @@ export default function WorldMap({
           ref={tipRef}
           role="tooltip"
           aria-hidden
-          className="zd-tip-in pointer-events-none fixed left-0 top-0 z-[var(--z-tooltip)] w-[240px] max-w-[240px] rounded-lg border border-border bg-surface/95 p-3 shadow-lg backdrop-blur-sm"
+          className="zd-tip-in pointer-events-none fixed left-0 top-0 z-[var(--z-tooltip)] w-[240px] max-w-[240px] rounded-lg border border-border bg-surface p-3 shadow-lg"
         >
           {tipCountry ? (
             <>
               <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                <span aria-hidden className="text-base leading-none">
-                  {FLAGS[tipCountry.isoN]}
-                </span>
+                <Flag isoN={tipCountry.isoN} className="h-4 w-auto" />
                 <span className="truncate">{tipCountry.name}</span>
               </p>
               <p className="mt-0.5 text-[11px] text-muted">{tipCountry.region}</p>
@@ -239,7 +275,13 @@ export default function WorldMap({
               </div>
 
               <p className="mt-2.5 text-[11px] text-muted">
-                Click for full profile →
+                {selectMode
+                  ? comparedIsoNs?.includes(tipCountry.isoN)
+                    ? "Click to remove from comparison"
+                    : comparisonFull
+                      ? "Comparison full (max 4)"
+                      : "Click to add to comparison"
+                  : "Click for full profile →"}
               </p>
             </>
           ) : (

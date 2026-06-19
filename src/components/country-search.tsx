@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
 import { Search } from "lucide-react";
 import { COUNTRIES } from "@/lib/zedas-data";
-import { FLAGS } from "@/lib/layers";
+import Flag from "./flag";
 
 interface CountrySearchProps {
   open: boolean;
@@ -62,9 +62,7 @@ export default function CountrySearch({
                   onSelect={() => onSelect(c.isoN)}
                   className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground data-[selected=true]:bg-surface-2"
                 >
-                  <span aria-hidden className="text-base leading-none">
-                    {FLAGS[c.isoN]}
-                  </span>
+                  <Flag isoN={c.isoN} className="h-4 w-auto" />
                   <span className="flex-1 truncate">{c.name}</span>
                   <span className="shrink-0 text-[11px] text-muted">
                     {c.region}
