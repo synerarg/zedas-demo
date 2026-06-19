@@ -1,21 +1,22 @@
 "use client";
 
 import { X } from "lucide-react";
-import { INDICATORS, PROFILE_COLOR, type Country } from "@/lib/zedas-data";
 import {
-  FLAGS,
-  formatNumber,
-  INDICATOR_COLOR,
-  INDICATOR_LAYERS,
-  profileTextColor,
-  type LayerId,
-} from "@/lib/layers";
+  GROUPED_INDICATORS,
+  indicatorCategory,
+  indicatorFraction,
+  sourceLines,
+  type Country,
+  type Indicator,
+  type IndicatorKey,
+} from "@/lib/zedas-data";
+import { FLAGS } from "@/lib/layers";
 
 interface ComparisonDrawerProps {
   open: boolean;
   onClose: () => void;
   countries: Country[];
-  activeLayer: LayerId;
+  activeKey: IndicatorKey;
   onRemove: (isoN: number) => void;
   onClear: () => void;
 }
@@ -24,7 +25,7 @@ export default function ComparisonDrawer({
   open,
   onClose,
   countries,
-  activeLayer,
+  activeKey,
   onRemove,
   onClear,
 }: ComparisonDrawerProps) {
@@ -91,7 +92,12 @@ export default function ComparisonDrawer({
               <thead>
                 <tr>
                   {/* corner */}
-                  <th className="sticky left-0 z-10 w-28 border-b border-r border-border bg-surface" />
+                  <th
+                    scope="col"
+                    className="sticky left-0 z-10 w-28 border-b border-r border-border bg-surface"
+                  >
+                    <span className="sr-only">Indicator</span>
+                  </th>
                   {countries.map((c) => (
                     <th
                       key={c.isoN}
@@ -109,96 +115,153 @@ export default function ComparisonDrawer({
                         </button>
                       </div>
                       <p className="-mt-1 flex items-center gap-1.5 text-base font-semibold leading-tight text-foreground">
-                        <span aria-hidden className="shrink-0 text-sm leading-none">
+                        <span
+                          aria-hidden
+                          className="shrink-0 text-sm leading-none"
+                        >
                           {FLAGS[c.isoN]}
                         </span>
                         <span className="truncate">{c.name}</span>
                       </p>
-                      <span
-                        className="mt-2 inline-block rounded-md px-2 py-1 text-[11px] font-medium leading-snug"
-                        style={{
-                          backgroundColor: PROFILE_COLOR[c.profile],
-                          color: profileTextColor(c.profile),
-                        }}
-                      >
-                        {c.profile}
-                      </span>
+                      <p className="mt-1 text-xs leading-snug text-muted">
+                        {c.region}
+                      </p>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {INDICATOR_LAYERS.map((l) => {
-                  const key = l.indicatorKey;
-                  const isActiveRow = l.id === activeLayer;
-                  const rowMax = Math.max(...countries.map((c) => c[key]));
-                  return (
-                    <tr key={key}>
-                      <th
-                        scope="row"
-                        className={`sticky left-0 z-10 border-b border-r border-border px-4 py-4 text-left align-middle ${
-                          isActiveRow ? "bg-surface-2" : "bg-surface"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span
-                            aria-hidden
-                            className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: INDICATOR_COLOR[key] }}
-                          />
-                          <div className="min-w-0">
-                            <div
-                              className={`text-sm leading-tight text-foreground ${
-                                isActiveRow ? "font-semibold" : "font-medium"
-                              }`}
-                            >
-                              {INDICATORS[key].label}
-                            </div>
-                            <div className="text-xs text-muted">
-                              {INDICATORS[key].unit}
-                            </div>
-                          </div>
-                        </div>
-                      </th>
-                      {countries.map((c) => {
-                        const v = c[key];
-                        const pct =
-                          rowMax > 0 ? Math.max(3, (v / rowMax) * 100) : 0;
-                        return (
-                          <td
-                            key={c.isoN}
-                            className={`border-b border-border px-4 py-4 align-middle ${
-                              isActiveRow ? "bg-surface-2" : ""
-                            }`}
-                          >
-                            <div className="tnum text-[15px] font-medium text-foreground">
-                              {formatNumber(v)}
-                            </div>
-                            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
-                              <div
-                                className="h-full rounded-full"
-                                style={{
-                                  width: `${pct}%`,
-                                  backgroundColor: INDICATOR_COLOR[key],
-                                }}
-                              />
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
+                {GROUPED_INDICATORS.map(({ group, indicators }) => (
+                  <GroupRows
+                    key={group}
+                    group={group}
+                    indicators={indicators}
+                    countries={countries}
+                    activeKey={activeKey}
+                  />
+                ))}
               </tbody>
             </table>
 
-            <p className="px-5 py-4 text-xs leading-relaxed text-muted">
-              Bars are scaled to the highest value in each row. Values are
-              placeholders.
-            </p>
+            <div className="px-5 py-4 text-xs leading-relaxed text-muted">
+              <p>
+                Bars are scaled to the highest value among the compared
+                countries.
+              </p>
+              {sourceLines().map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
           </div>
         </div>
       )}
     </aside>
+  );
+}
+
+function GroupRows({
+  group,
+  indicators,
+  countries,
+  activeKey,
+}: {
+  group: string;
+  indicators: Indicator[];
+  countries: Country[];
+  activeKey: IndicatorKey;
+}) {
+  const colSpan = countries.length + 1;
+  return (
+    <>
+      <tr>
+        <th
+          scope="colgroup"
+          colSpan={colSpan}
+          className="sticky left-0 z-10 border-b border-border bg-surface-2 px-4 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted"
+        >
+          {group}
+        </th>
+      </tr>
+      {indicators.map((ind) => {
+        const isActiveRow = ind.key === activeKey;
+        const max =
+          ind.scale === "sequential"
+            ? Math.max(...countries.map((x) => ind.numericValue(x)))
+            : 0;
+        return (
+          <tr key={ind.key}>
+            <th
+              scope="row"
+              className={`sticky left-0 z-10 border-b border-r border-border px-4 py-4 text-left align-middle ${
+                isActiveRow ? "bg-surface-2" : "bg-surface"
+              }`}
+            >
+              <div className="min-w-0">
+                <div
+                  className={`text-sm leading-tight text-foreground ${
+                    isActiveRow ? "font-semibold" : "font-medium"
+                  }`}
+                >
+                  {ind.label}
+                </div>
+                {ind.unit && (
+                  <div className="text-xs text-muted">{ind.unit}</div>
+                )}
+              </div>
+            </th>
+            {countries.map((c) => (
+              <td
+                key={c.isoN}
+                className={`border-b border-border px-4 py-4 align-middle ${
+                  isActiveRow ? "bg-surface-2" : ""
+                }`}
+              >
+                {ind.scale === "sequential" ? (
+                  <>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="tnum text-[15px] font-medium text-foreground">
+                        {ind.format(c)}
+                      </span>
+                      {ind.rank && (
+                        <span className="tnum shrink-0 text-xs text-muted">
+                          #{ind.rank(c)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.round(
+                            indicatorFraction(ind, c, [0, max]) * 100,
+                          )}%`,
+                          backgroundColor: ind.ramp[1],
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: indicatorCategory(ind, c).color }}
+                    />
+                    <span className="text-[15px] font-medium leading-tight text-foreground">
+                      {indicatorCategory(ind, c).label}
+                    </span>
+                    {ind.unit && (
+                      <span className="tnum shrink-0 text-xs text-muted">
+                        {ind.format(c)}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </td>
+            ))}
+          </tr>
+        );
+      })}
+    </>
   );
 }

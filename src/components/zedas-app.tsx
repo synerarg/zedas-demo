@@ -3,8 +3,13 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Search, Layers } from "lucide-react";
-import { COUNTRY_BY_ISON } from "@/lib/zedas-data";
-import { CENTROIDS, clampCenter, type LayerId, getLayer } from "@/lib/layers";
+import {
+  COUNTRY_BY_ISON,
+  DEFAULT_INDICATOR,
+  getIndicator,
+  type IndicatorKey,
+} from "@/lib/zedas-data";
+import { CENTROIDS, clampCenter } from "@/lib/layers";
 import { useTheme } from "@/lib/use-theme";
 import type { MapPosition } from "./world-map";
 import LeftPanel from "./left-panel";
@@ -34,7 +39,7 @@ function MapSkeleton() {
 
 export default function ZedasApp() {
   const { theme, toggle: toggleTheme } = useTheme();
-  const [activeLayer, setActiveLayer] = useState<LayerId>("score");
+  const [activeKey, setActiveKey] = useState<IndicatorKey>(DEFAULT_INDICATOR);
   const [position, setPosition] = useState<MapPosition>({
     coordinates: [0, 0],
     zoom: 1,
@@ -58,7 +63,7 @@ export default function ZedasApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const layer = getLayer(activeLayer);
+  const indicator = getIndicator(activeKey);
   const selectedCountry =
     selectedIsoN != null ? COUNTRY_BY_ISON[selectedIsoN] : null;
   const comparisonCountries = useMemo(
@@ -100,7 +105,7 @@ export default function ZedasApp() {
       {/* Map canvas — the hero */}
       <div className="absolute inset-0 z-[var(--z-map)]">
         <WorldMap
-          layer={layer}
+          indicator={indicator}
           theme={theme}
           position={position}
           onPositionChange={setPosition}
@@ -151,7 +156,7 @@ export default function ZedasApp() {
 
         {/* Left panel: layers, adaptive legend, insight, upload */}
         <div className="pointer-events-none absolute bottom-4 left-3 top-[5.5rem] w-[15.5rem] pb-[env(safe-area-inset-bottom)] sm:left-4 sm:w-[16.5rem]">
-          <LeftPanel active={activeLayer} onChange={setActiveLayer} />
+          <LeftPanel active={activeKey} onChange={setActiveKey} />
         </div>
       </div>
 
@@ -173,7 +178,7 @@ export default function ZedasApp() {
         open={compareOpen}
         onClose={() => setCompareOpen(false)}
         countries={comparisonCountries}
-        activeLayer={activeLayer}
+        activeKey={activeKey}
         onRemove={toggleComparison}
         onClear={() => {
           setComparison([]);

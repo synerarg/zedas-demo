@@ -2,12 +2,17 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, Plus, X } from "lucide-react";
-import { INDICATORS, type Country } from "@/lib/zedas-data";
-import { FLAGS, formatNumber, INDICATOR_LAYERS } from "@/lib/layers";
-import ScorePill from "./score-pill";
-import IndicatorBarChart from "./indicator-bar-chart";
-
-const NBSP = " ";
+import {
+  GROUPED_INDICATORS,
+  WITHDRAWAL_SECTORS,
+  DATA_NOTE,
+  formatNumber,
+  sourceLines,
+  indicatorCategory,
+  type Country,
+  type Indicator,
+} from "@/lib/zedas-data";
+import { FLAGS } from "@/lib/layers";
 
 interface CountryModalProps {
   country: Country | null;
@@ -15,6 +20,92 @@ interface CountryModalProps {
   onOpenChange: (open: boolean) => void;
   inComparison: boolean;
   onToggleComparison: (isoN: number) => void;
+}
+
+function WithdrawalSplit({ country }: { country: Country }) {
+  return (
+    <div className="mt-2.5">
+      <div
+        className="flex h-2.5 w-full overflow-hidden rounded-full bg-surface-2"
+        role="presentation"
+      >
+        {WITHDRAWAL_SECTORS.map((sector) => (
+          <div
+            key={sector.key}
+            style={{
+              width: `${sector.value(country)}%`,
+              backgroundColor: sector.color,
+            }}
+          />
+        ))}
+      </div>
+      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+        {WITHDRAWAL_SECTORS.map((sector) => (
+          <li
+            key={sector.key}
+            className="flex items-center gap-1.5 text-[11px] text-muted"
+          >
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: sector.color }}
+            />
+            <span className="text-foreground">{sector.label}</span>
+            <span className="tnum">
+              {formatNumber(sector.value(country), 1)}%
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function IndicatorRow({
+  ind,
+  country,
+}: {
+  ind: Indicator;
+  country: Country;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-surface-2/50 p-3">
+      <div className="text-[11px] leading-tight text-muted">{ind.label}</div>
+      {ind.scale === "sequential" ? (
+        <>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="tnum text-base font-medium text-foreground">
+              {ind.format(country)}
+            </span>
+            {ind.rank !== null && (
+              <span className="tnum text-[11px] text-muted">
+                World rank #{ind.rank(country)}
+              </span>
+            )}
+          </div>
+          {ind.key === "totalWithdrawal" && (
+            <WithdrawalSplit country={country} />
+          )}
+        </>
+      ) : (
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-foreground">
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: indicatorCategory(ind, country).color }}
+            />
+            {indicatorCategory(ind, country).label}
+          </span>
+          {ind.unit === "%" && (
+            <span className="tnum text-[11px] text-muted">
+              {ind.format(country)}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function CountryModal({
@@ -34,7 +125,7 @@ export default function CountryModal({
         <Dialog.Content
           data-zd-modal
           aria-describedby="country-modal-desc"
-          className="fixed inset-x-0 bottom-0 z-[var(--z-modal)] max-h-[88dvh] w-full overflow-y-auto rounded-t-2xl border border-border bg-surface p-5 shadow-2xl [overscroll-behavior:contain] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[min(34rem,92vw)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:pb-5"
+          className="fixed inset-x-0 bottom-0 z-[var(--z-modal)] max-h-[88dvh] w-full overflow-y-auto rounded-t-2xl border border-border bg-surface p-5 shadow-2xl [overscroll-behavior:contain] pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[min(38rem,92vw)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:pb-5"
         >
           {country && (
             <>
@@ -50,11 +141,8 @@ export default function CountryModal({
                     id="country-modal-desc"
                     className="mt-1 text-xs text-muted"
                   >
-                    Water profile — pilot release
+                    {country.region}
                   </Dialog.Description>
-                  <div className="mt-2.5">
-                    <ScorePill profile={country.profile} />
-                  </div>
                 </div>
                 <Dialog.Close
                   aria-label="Close"
@@ -64,45 +152,35 @@ export default function CountryModal({
                 </Dialog.Close>
               </div>
 
-              <dl className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                {INDICATOR_LAYERS.map((layer) => {
-                  const key = layer.indicatorKey;
-                  return (
-                    <div
-                      key={key}
-                      className="rounded-lg border border-border bg-surface-2/50 p-3"
-                    >
-                      <dt className="text-[11px] leading-tight text-muted">
-                        {INDICATORS[key].label}
-                      </dt>
-                      <dd className="mt-1 flex items-baseline gap-1">
-                        <span className="tnum text-lg font-medium text-foreground">
-                          {formatNumber(country[key])}
-                        </span>
-                        <span className="text-[11px] text-muted">
-                          {INDICATORS[key].unit}
-                        </span>
-                      </dd>
+              <div className="mt-4 space-y-4">
+                {GROUPED_INDICATORS.map(({ group, indicators }) => (
+                  <section key={group}>
+                    <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                      {group}
+                    </h3>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {indicators.map((ind) => (
+                        <IndicatorRow
+                          key={ind.key}
+                          ind={ind}
+                          country={country}
+                        />
+                      ))}
                     </div>
-                  );
-                })}
-              </dl>
-
-              <div className="mt-4">
-                <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">
-                  Indicators
-                </h3>
-                <IndicatorBarChart country={country} />
+                  </section>
+                ))}
               </div>
 
-              <div className="mt-4 space-y-1 border-t border-border pt-3 text-xs text-muted">
-                <p className="break-words">
-                  Pilot data steward: {country.focalPoint}
-                  {country.affiliation && country.affiliation !== "—"
-                    ? ` ${NBSP}·${NBSP} ${country.affiliation}`
-                    : ""}
-                </p>
-                <p>Source: {country.source}</p>
+              <div className="mt-4 space-y-2 border-t border-border pt-3 text-[11px] text-muted">
+                <div>
+                  <p className="font-medium text-foreground/80">Sources</p>
+                  <ul className="mt-0.5 space-y-0.5">
+                    {sourceLines().map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="break-words">{DATA_NOTE}</p>
               </div>
 
               <div className="mt-4">

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
 import { Search } from "lucide-react";
-import { COUNTRIES, PROFILE_COLOR } from "@/lib/zedas-data";
+import { COUNTRIES } from "@/lib/zedas-data";
 import { FLAGS } from "@/lib/layers";
 
 interface CountrySearchProps {
@@ -66,11 +66,9 @@ export default function CountrySearch({
                     {FLAGS[c.isoN]}
                   </span>
                   <span className="flex-1 truncate">{c.name}</span>
-                  <span
-                    aria-hidden
-                    className="size-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
-                    style={{ backgroundColor: PROFILE_COLOR[c.profile] }}
-                  />
+                  <span className="shrink-0 text-[11px] text-muted">
+                    {c.region}
+                  </span>
                 </Command.Item>
               ))}
             </Command.List>
