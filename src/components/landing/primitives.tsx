@@ -14,8 +14,9 @@ export function Container({
   );
 }
 
-/** A small, named section label. Used as deliberate wayfinding (it mirrors the
- *  nav), not as a decorative kicker over every block. */
+/** A small, named section label, set as a chart annotation: a short tick rule
+ *  then tracked accent caps. Deliberate wayfinding (it mirrors the nav), and the
+ *  tick ties it to the cartographic instrument language used across the page. */
 export function Eyebrow({
   children,
   className = "",
@@ -24,11 +25,28 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
-    <p
-      className={`text-[11px] font-semibold uppercase tracking-[0.16em] text-accent ${className}`}
-    >
-      {children}
+    <p className={`flex items-center gap-2.5 ${className}`}>
+      <span aria-hidden className="h-px w-7 shrink-0 bg-accent/70" />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+        {children}
+      </span>
     </p>
+  );
+}
+
+/** A measured label — tabular figures, wide tracking — for coordinates, indices,
+ *  and instrument readouts. Same Geist family (project rule: one typeface). */
+export function Measure({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={`zd-meas text-[11px] uppercase text-muted ${className}`}>
+      {children}
+    </span>
   );
 }
 

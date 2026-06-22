@@ -56,6 +56,7 @@ export default function ContourField({ className, drift = false }: ContourFieldP
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       focusable="false"
+      data-contour
       className={className}
     >
       <g

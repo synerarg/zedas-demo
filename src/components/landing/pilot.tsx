@@ -24,7 +24,7 @@ export default function Pilot() {
           <Eyebrow>The Pilot</Eyebrow>
           <h2
             id="pilot-title"
-            className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            className="mt-4 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
           >
             Sixteen countries, one standardized methodology
           </h2>

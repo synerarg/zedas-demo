@@ -5,20 +5,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Design tokens ──────────────────────────────────────────────────────────
-   Single source of truth. Swap the palette here in one edit. Neutral cool-water
-   surfaces; one teal accent. The boldness lives in the Zedas Score colors. */
+   Single source of truth. Swap the palette here in one edit.
+
+   The page surface is a single flat colour — pure white in light, one near-black
+   in dark — so backgrounds never read as two muddy greys. Cards earn separation
+   from hairline borders and a whisper of shadow, not a second fill. The boldness
+   lives in the Zedas Score colours and in the one inverted "deep water" band. */
 :root {
   color-scheme: light;
 
-  --background: #eef3f6; /* page / ocean behind the map */
-  --surface: #ffffff; /* panels */
-  --surface-2: #eef2f5; /* insets, hover */
-  --foreground: #16212b; /* ink — not pure black */
-  --muted: #586672;
-  --border: #dbe3e9;
+  --background: #ffffff; /* page / ocean behind the map — flat white */
+  --surface: #ffffff; /* panels are white too; borders do the separating */
+  --surface-2: #f3f7f8; /* used sparingly: instrument readouts, hover insets */
+  --foreground: #0c161b; /* ink — not pure black */
+  --muted: #56646e;
+  --border: #e6ecee; /* hairline */
+  --border-strong: #d3dde1; /* emphasised dividers, instrument ticks */
   --ring: #0f766e;
   --accent: #0f766e;
   --accent-foreground: #ffffff;
+  --grid-line: #eef3f4; /* faint cartographic graticule on white */
 
   /* Zedas Score categorical (max hue separation; AA-paired with labels). */
   --score-hq: #0f766e; /* High Availability – High Quality */
@@ -29,20 +35,31 @@
   --no-data: #d8dce0;
   --map-stroke: #c4cdd5;
   --map-stroke-strong: #8a99a6;
+
+  /* The inverted "deep water" band (Manifesto). Intentionally dark in BOTH
+     themes — a deliberate editorial moment, not the muddy grey it replaces. */
+  --deep: #061b21;
+  --deep-2: #0a242c;
+  --deep-foreground: #e9f4f4;
+  --deep-muted: #8fb0b2;
+  --deep-border: #16363d;
+  --deep-accent: #2dd4bf;
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: #0b1117;
-  --surface: #131c25;
-  --surface-2: #1b2530;
-  --foreground: #e7edf2;
-  --muted: #93a2af;
-  --border: #27323d;
+  --background: #060d11; /* single near-black, faint teal cast */
+  --surface: #0b141a; /* a hair above the page; border carries the edge */
+  --surface-2: #111d24;
+  --foreground: #e8f0f1;
+  --muted: #8b9aa3;
+  --border: #1a2730;
+  --border-strong: #283942;
   --ring: #2dd4bf;
   --accent: #19a89b; /* desaturated tonal teal, not an invert */
   --accent-foreground: #04110f;
+  --grid-line: #0e1a20;
 
   --score-hq: #16a394;
   --score-qc: #e0b23f;
@@ -52,6 +69,13 @@
   --no-data: #2a2f36;
   --map-stroke: #313c46;
   --map-stroke-strong: #5a6976;
+
+  --deep: #04141a;
+  --deep-2: #082028;
+  --deep-foreground: #e9f4f4;
+  --deep-muted: #88a8aa;
+  --deep-border: #163138;
+  --deep-accent: #2dd4bf;
 }
 
 @theme inline {
@@ -61,9 +85,17 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-ring: var(--ring);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  --color-deep: var(--deep);
+  --color-deep-2: var(--deep-2);
+  --color-deep-foreground: var(--deep-foreground);
+  --color-deep-muted: var(--deep-muted);
+  --color-deep-border: var(--deep-border);
+  --color-deep-accent: var(--deep-accent);
 
   --color-score-hq: var(--score-hq);
   --color-score-qc: var(--score-qc);
@@ -227,6 +259,48 @@
 .zd-contour-drift {
   animation: zd-contour-drift 26s ease-in-out infinite alternate;
   will-change: transform;
+}
+
+/* ── Cartographic instrument language ────────────────────────────────────────
+   The page borrows the vernacular of a survey chart: a faint coordinate
+   graticule, tick rules, and measured labels. Used with restraint so it frames
+   content like a chart rather than decorating it. */
+
+/* Faint coordinate grid. The radial mask lets it dissolve toward the edges so it
+   never reads as a hard table. Pair with a wrapper that sets its own opacity. */
+.zd-graticule {
+  background-image:
+    repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 64px);
+  -webkit-mask-image: radial-gradient(120% 120% at 50% 40%, #000 35%, transparent 78%);
+  mask-image: radial-gradient(120% 120% at 50% 40%, #000 35%, transparent 78%);
+}
+
+/* Monospaced-feel measured label (same Geist family, tabular figures + tracking)
+   for coordinates, indices, and instrument readouts. */
+.zd-meas {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Contour stroke draw-on: GSAP measures each path and animates strokeDashoffset
+   from its length → 0. This class only marks intent; the visible default stays
+   fully drawn so reduced-motion / headless renders show the complete field. */
+.zd-contour-draw path {
+  will-change: stroke-dashoffset;
+}
+
+/* Methodology "depth gauge" connector — a vertical rule that GSAP scrubs from
+   scaleY(0) as the strata reveal. Origin top so it descends like a sounding. */
+.zd-depth-rule {
+  transform-origin: top;
+}
+
+/* Soft accent glow used to seat content on the deep-water band. */
+.zd-deep-glow {
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in oklab, var(--deep-accent) 12%, transparent), transparent 70%);
 }
 
 /* Scroll-reveal default: content is ALWAYS visible by default; GSAP sets the

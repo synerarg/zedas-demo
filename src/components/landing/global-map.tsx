@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import Reveal from "./reveal";
-import { Container, Eyebrow } from "./primitives";
+import { Container, Eyebrow, Measure } from "./primitives";
 
 // Honest framing per brief §5.2: only the capabilities the live map actually
 // ships today are stated as present; basins, aquifers, sub-national detail,
@@ -40,7 +40,7 @@ export default function GlobalMap() {
           <Eyebrow>The Global Map</Eyebrow>
           <h2
             id="map-title"
-            className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+            className="mt-4 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
           >
             See where water favors production
           </h2>
@@ -53,9 +53,7 @@ export default function GlobalMap() {
 
         <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
           <Reveal>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-              Available today
-            </h3>
+            <Measure>Available today</Measure>
             <ul className="mt-5 flex flex-col gap-3.5">
               {LIVE_TODAY.map((item) => (
                 <li key={item} className="flex gap-3">
@@ -73,7 +71,7 @@ export default function GlobalMap() {
 
             <Link
               href="/map"
-              className="group mt-9 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-[15px] font-semibold text-accent-foreground shadow-sm transition-[transform,background-color] duration-200 ease-[var(--ease-out-quart)] hover:bg-accent/90 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="group mt-9 inline-flex h-12 w-fit items-center justify-center gap-2 rounded-xl bg-accent px-6 text-[15px] font-semibold text-accent-foreground shadow-sm transition-[transform,background-color] duration-200 ease-[var(--ease-out-quart)] hover:bg-accent/90 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               Explore the Global Map
               <ArrowRight
@@ -83,41 +81,46 @@ export default function GlobalMap() {
             </Link>
           </Reveal>
 
-          <Reveal delay={0.05} className="rounded-2xl border border-border bg-surface p-7 sm:p-8">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-              Zedas Score classification
-            </h3>
-            <ul className="mt-4 flex flex-col gap-3">
-              {SCORE_PROFILES.map((p) => (
-                <li key={p.label} className="flex items-center gap-3">
-                  <span
-                    aria-hidden
-                    className={`size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10 ${p.token}`}
-                  />
-                  <span className="text-[15px] leading-snug text-foreground/90">
-                    {p.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <Reveal
+            delay={0.05}
+            className="relative overflow-hidden rounded-2xl border border-border bg-surface p-7 sm:p-8"
+          >
+            <div
+              aria-hidden
+              className="zd-graticule pointer-events-none absolute inset-0 opacity-60"
+            />
+            <div className="relative">
+              <Measure>Zedas Score classification</Measure>
+              <ul className="mt-5 flex flex-col gap-3.5">
+                {SCORE_PROFILES.map((p) => (
+                  <li key={p.label} className="flex items-center gap-3">
+                    <span
+                      aria-hidden
+                      className={`size-3.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10 ${p.token}`}
+                    />
+                    <span className="text-[15px] leading-snug text-foreground/90">
+                      {p.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-            <hr className="my-6 border-t border-border" />
+              <hr className="my-7 border-t border-border" />
 
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-                On the roadmap
-              </h3>
-              <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
-                Planned
-              </span>
+              <div className="flex items-center justify-between gap-2">
+                <Measure>On the roadmap</Measure>
+                <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  Planned
+                </span>
+              </div>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {ROADMAP.map((item) => (
+                  <li key={item} className="text-[15px] leading-snug text-muted">
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              {ROADMAP.map((item) => (
-                <li key={item} className="text-[15px] leading-snug text-muted">
-                  {item}
-                </li>
-              ))}
-            </ul>
           </Reveal>
         </div>
       </Container>

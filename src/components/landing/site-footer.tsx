@@ -14,8 +14,12 @@ const FUTURE_PAGES = [
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-surface">
-      <Container className="py-16 lg:py-20">
+    <footer className="relative overflow-hidden border-t border-border bg-surface">
+      <div
+        aria-hidden
+        className="zd-graticule pointer-events-none absolute inset-0 opacity-50"
+      />
+      <Container className="relative py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Through-line + tagline */}
           <div className="lg:col-span-5">
