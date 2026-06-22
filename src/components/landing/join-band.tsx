@@ -9,7 +9,7 @@ export default function JoinBand() {
     <section
       id="join"
       aria-labelledby="join-title"
-      className="scroll-mt-20 border-t border-border py-20 sm:py-28 lg:py-32"
+      className="scroll-mt-20 py-20 sm:py-28 lg:py-32"
     >
       <Container>
         <Reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-border bg-surface px-6 py-14 text-center shadow-[0_1px_0_0_var(--border)] sm:px-12 sm:py-20">

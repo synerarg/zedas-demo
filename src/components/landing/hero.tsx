@@ -4,18 +4,8 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { ensureGsap, useIsomorphicLayoutEffect, EASE_OUT } from "@/lib/motion";
-import ContourField from "./contour-field";
-import { Measure } from "./primitives";
-
-// The four Zedas Score profiles, shown in the hero as a compact "key" so the
-// page opens on the product's actual output — not an abstract slogan. Colours
-// are the map's categorical tokens (the brand's one bold move).
-const SCORE_KEY = [
-  { token: "bg-score-hq", label: "High availability" },
-  { token: "bg-score-qc", label: "Quality constrained" },
-  { token: "bg-score-eff", label: "High efficiency" },
-  { token: "bg-score-risk", label: "Restricted use" },
-];
+import { StripedPattern } from "@/components/magicui/striped-pattern";
+import { Eyebrow } from "./primitives";
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -32,26 +22,14 @@ export default function Hero() {
       // hide-then-reveal so content stays at its visible CSS default.
       if (document.hidden) return;
 
-      // Signature: the bathymetric contour field draws itself on, like a survey
-      // chart being plotted. Measure each isoline and run its stroke in.
-      const paths = el.querySelectorAll<SVGPathElement>("[data-contour] path");
-      paths.forEach((p) => {
-        const len = p.getTotalLength();
-        gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
-      });
+      // Entrance: the centred content rises and fades in, then the scroll cue.
       const tl = gsap.timeline({ defaults: { ease: EASE_OUT } });
-      tl.to(paths, {
-        strokeDashoffset: 0,
-        duration: 1.6,
-        stagger: 0.04,
-        ease: "power2.out",
-      })
-        .from(
-          el.querySelectorAll("[data-hero-item]"),
-          { opacity: 0, y: 26, duration: 0.8, stagger: 0.08 },
-          0.25,
-        )
-        .from("[data-hero-cue]", { opacity: 0, duration: 0.6 }, "-=0.2");
+      tl.from(el.querySelectorAll("[data-hero-item]"), {
+        opacity: 0,
+        y: 26,
+        duration: 0.8,
+        stagger: 0.08,
+      }).from("[data-hero-cue]", { opacity: 0, duration: 0.6 }, "-=0.2");
     });
 
     return () => mm.revert();
@@ -63,42 +41,26 @@ export default function Hero() {
       aria-labelledby="hero-title"
       className="relative isolate flex min-h-dvh flex-col justify-center overflow-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-8"
     >
-      {/* Instrument backdrop: faint coordinate graticule + the contour signature,
-          seated by a soft white vignette so the type stays the focus. */}
-      <div
-        aria-hidden
-        className="zd-graticule pointer-events-none absolute inset-0 -z-20 opacity-70"
-      />
-      <ContourField
-        drift
-        className="zd-contour-draw pointer-events-none absolute inset-0 -z-10 h-full w-full text-accent opacity-[0.16] dark:opacity-[0.2]"
-      />
+      {/* Instrument backdrop: a fine diagonal hatch (Magic UI striped pattern),
+          seated by a soft vignette so the type stays the focus. The vignette
+          sits above the hatch so the stripes dissolve toward the edges instead
+          of reading as a hard fill. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-20">
+        <StripedPattern
+          width={14}
+          height={14}
+          className="text-accent opacity-[0.14] dark:opacity-[0.18]"
+        />
+      </div>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(115%_85%_at_50%_42%,transparent_30%,var(--background)_88%)]"
       />
 
-      {/* Survey coordinate ticks — instrument vernacular, decorative. */}
-      <Measure className="pointer-events-none absolute left-5 top-24 hidden lg:block">
-        34°36′S · 58°22′W
-      </Measure>
-      <Measure className="pointer-events-none absolute right-5 top-24 hidden lg:block">
-        EQUAL EARTH
-      </Measure>
-
       <div className="mx-auto w-full max-w-3xl text-center">
-        <p
-          data-hero-item
-          className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
-        >
-          <span className="text-sm font-bold tracking-tight text-foreground">
-            ZEDAS Project
-          </span>
-          <span aria-hidden className="hidden h-3 w-px bg-border-strong sm:block" />
-          <span className="zd-meas text-[11px] uppercase text-muted">
-            Global water-intelligence platform · Pilot
-          </span>
-        </p>
+        <div data-hero-item className="flex justify-center">
+          <Eyebrow>Global water-intelligence platform · Pilot</Eyebrow>
+        </div>
 
         <h1
           id="hero-title"
@@ -139,37 +101,6 @@ export default function Hero() {
           >
             How it works
           </a>
-        </div>
-
-        {/* The through-line — the brand's emotional spine, with a drawn accent. */}
-        <p
-          data-hero-item
-          className="mx-auto mt-14 text-[clamp(1.4rem,4vw,2.25rem)] font-semibold tracking-[-0.02em] text-foreground"
-        >
-          Production follows{" "}
-          <span className="text-accent underline decoration-accent/30 decoration-[3px] underline-offset-[6px]">
-            water
-          </span>
-          .
-        </p>
-
-        {/* Product key: the Zedas Score, shown up front. */}
-        <div
-          data-hero-item
-          className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-2"
-        >
-          <span className="zd-meas text-[10px] uppercase text-muted">
-            Zedas Score
-          </span>
-          {SCORE_KEY.map(({ token, label }) => (
-            <span key={label} className="flex items-center gap-1.5">
-              <span
-                aria-hidden
-                className={`size-2.5 rounded-full ring-1 ring-inset ring-black/10 ${token}`}
-              />
-              <span className="text-xs text-muted">{label}</span>
-            </span>
-          ))}
         </div>
       </div>
 

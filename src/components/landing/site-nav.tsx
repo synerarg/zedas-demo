@@ -55,16 +55,16 @@ export default function SiteNav() {
     >
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+        className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8"
       >
         <Link
           href="/"
-          className="rounded-md text-base font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+          className="justify-self-start rounded-md text-base font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
         >
           ZEDAS<span className="font-medium text-muted"> Project</span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 justify-self-center md:flex">
           {NAV_LINKS.map((l) => (
             <a
               key={l.href}
@@ -76,7 +76,7 @@ export default function SiteNav() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-self-end">
           <ThemeToggle theme={theme} onToggle={toggle} />
           <Link
             href="/map"

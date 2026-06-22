@@ -30,7 +30,7 @@ export default function WhyZedas() {
     <section
       id="why"
       aria-labelledby="why-title"
-      className="scroll-mt-20 border-t border-border py-20 sm:py-28 lg:py-32"
+      className="scroll-mt-20 py-20 sm:py-28 lg:py-32"
     >
       <Container>
         <Reveal className="max-w-3xl">

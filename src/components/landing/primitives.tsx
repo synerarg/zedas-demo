@@ -14,9 +14,10 @@ export function Container({
   );
 }
 
-/** A small, named section label, set as a chart annotation: a short tick rule
- *  then tracked accent caps. Deliberate wayfinding (it mirrors the nav), and the
- *  tick ties it to the cartographic instrument language used across the page. */
+/** A small, named section label, framed as a survey registration target: four
+ *  corner ticks bracketing a crosshair marker and tracked accent caps. It speaks
+ *  the page's cartographic-instrument language as a *mark* rather than a plain
+ *  rule, so the same badge reads as deliberate wayfinding everywhere it appears. */
 export function Eyebrow({
   children,
   className = "",
@@ -25,12 +26,26 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
-    <p className={`flex items-center gap-2.5 ${className}`}>
-      <span aria-hidden className="h-px w-7 shrink-0 bg-accent/70" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+    <span
+      className={`relative inline-flex items-center gap-2 px-3 py-1.5 ${className}`}
+    >
+      {/* Corner registration ticks — the four edges of a survey/crop target. */}
+      <span aria-hidden className="pointer-events-none absolute left-0 top-0 size-1.5 border-l border-t border-accent/60" />
+      <span aria-hidden className="pointer-events-none absolute right-0 top-0 size-1.5 border-r border-t border-accent/60" />
+      <span aria-hidden className="pointer-events-none absolute bottom-0 left-0 size-1.5 border-b border-l border-accent/60" />
+      <span aria-hidden className="pointer-events-none absolute bottom-0 right-0 size-1.5 border-b border-r border-accent/60" />
+      {/* Crosshair marker at the sighting point. */}
+      <span
+        aria-hidden
+        className="relative flex size-2.5 shrink-0 items-center justify-center text-accent"
+      >
+        <span className="absolute h-px w-2.5 bg-current" />
+        <span className="absolute h-2.5 w-px bg-current" />
+      </span>
+      <span className="zd-meas text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
         {children}
       </span>
-    </p>
+    </span>
   );
 }
 
