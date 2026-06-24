@@ -297,6 +297,16 @@
   transform-origin: top;
 }
 
+/* Blinking caret for the ZEDAS Intelligence chat demo's typewriter input.
+   Steady blink reads as a live text cursor; silenced under reduced motion. */
+@keyframes zd-caret-blink {
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+.zd-caret {
+  animation: zd-caret-blink 1s steps(1) infinite;
+}
+
 /* Soft accent glow used to seat content on the deep-water band. */
 .zd-deep-glow {
   background:

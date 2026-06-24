@@ -75,10 +75,7 @@ export default function Hero() {
           data-hero-item
           className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-muted sm:text-[17px]"
         >
-          As climate change, population growth, and industrial expansion strain
-          freshwater, ZEDAS identifies the territories where water availability,
-          quality, resilience, and governance can sustain long-term economic
-          development.
+          ZEDAs Project is building the world's first global platform to identify territories where water availability, quality, resilience, and governance can support long-term economic development.
         </p>
 
         <div

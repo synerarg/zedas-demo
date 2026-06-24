@@ -7,7 +7,9 @@ import WhyZedas from "@/components/landing/why-zedas";
 import Manifesto from "@/components/landing/manifesto";
 import Methodology from "@/components/landing/methodology";
 import GlobalMap from "@/components/landing/global-map";
+import Intelligence from "@/components/landing/intelligence";
 import JoinBand from "@/components/landing/join-band";
+import Acknowledgement from "@/components/landing/acknowledgement";
 import SiteFooter from "@/components/landing/site-footer";
 
 const jsonLd = {
@@ -57,7 +59,9 @@ export default function Home() {
         <Manifesto />
         <Methodology />
         <GlobalMap />
+        <Intelligence />
         <JoinBand />
+        <Acknowledgement />
       </main>
 
       <SiteFooter />

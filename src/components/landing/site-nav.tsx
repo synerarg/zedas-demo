@@ -12,6 +12,8 @@ const NAV_LINKS = [
   { href: "#pilot", label: "The Pilot" },
   { href: "#why", label: "Why ZEDAS" },
   { href: "#methodology", label: "Methodology" },
+  { href: "#intelligence", label: "Intelligence" },
+  { href: "#acknowledgement", label: "Acknowledgement" },
 ];
 
 // Phase-2 top-level pages (Gonzalo's full IA). Present but disabled so the
