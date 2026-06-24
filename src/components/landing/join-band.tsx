@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Send } from "lucide-react";
 import Reveal from "./reveal";
 import { Container, Measure } from "./primitives";
 import ContourField from "./contour-field";
+import { whatsappHref } from "@/lib/contact";
+
+const JOIN_MESSAGE =
+  "Hello, I'd like to join the ZEDAS Project network and receive more information.";
 
 export default function JoinBand() {
   return (
@@ -31,17 +35,15 @@ export default function JoinBand() {
             </p>
 
             <div className="mt-10 flex flex-col items-center gap-4">
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="inline-flex h-12 cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-border bg-background px-6 text-[15px] font-semibold text-muted"
+              <a
+                href={whatsappHref(JOIN_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-[15px] font-semibold text-accent-foreground shadow-sm transition-[transform,background-color] duration-200 ease-[var(--ease-out-quart)] hover:bg-accent/90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                Join the Network
-                <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-                  Soon
-                </span>
-              </button>
+                <Send className="size-4" aria-hidden />
+                Contact Us
+              </a>
               <Link
                 href="/map"
                 className="group inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

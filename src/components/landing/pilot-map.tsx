@@ -17,26 +17,35 @@ export default function PilotMap() {
 
   // Imperative tooltip positioning so following the pointer never re-renders the
   // map; the card content only changes when the hovered country changes.
+  // The tooltip is positioned *absolutely* inside the map container (not fixed to
+  // the viewport): an ancestor transform — e.g. the GSAP reveal wrapper, which
+  // leaves an inline transform behind — would otherwise reframe `position: fixed`
+  // and throw the card far from the cursor. Container-local coords avoid that.
+  const containerRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const dimsRef = useRef({ w: 180, h: 64 });
   const posRef = useRef({ x: 0, y: 0 });
 
   const place = useCallback(() => {
     const el = tipRef.current;
-    if (!el) return;
+    const container = containerRef.current;
+    if (!el || !container) return;
     const { w, h } = dimsRef.current;
     const { x, y } = posRef.current;
+    const rect = container.getBoundingClientRect();
     const pad = 8;
     const offX = 14;
     const offY = 16;
-    const vw = document.documentElement.clientWidth;
-    const vh = document.documentElement.clientHeight;
-    let left = x + offX;
-    let top = y + offY;
-    if (left + w + pad > vw) left = x - w - offX;
-    if (top + h + pad > vh) top = y - h - offY;
-    left = Math.min(Math.max(pad, left), vw - w - pad);
-    top = Math.min(Math.max(pad, top), vh - h - pad);
+    // Pointer position relative to the container (the tooltip's offset parent).
+    const px = x - rect.left;
+    const py = y - rect.top;
+    let left = px + offX;
+    let top = py + offY;
+    // Flip to the other side of the cursor if it would overflow the container.
+    if (left + w + pad > rect.width) left = px - w - offX;
+    if (top + h + pad > rect.height) top = py - h - offY;
+    left = Math.min(Math.max(pad, left), rect.width - w - pad);
+    top = Math.min(Math.max(pad, top), rect.height - h - pad);
     el.style.transform = `translate(${left}px, ${top}px)`;
   }, []);
 
@@ -49,6 +58,7 @@ export default function PilotMap() {
 
   return (
     <div
+      ref={containerRef}
       className="relative"
       role="img"
       aria-label="World map highlighting the sixteen ZEDAS pilot countries across Latin America, Africa, and Asia."
@@ -108,7 +118,7 @@ export default function PilotMap() {
           ref={tipRef}
           role="tooltip"
           aria-hidden
-          className="zd-tip-in pointer-events-none fixed left-0 top-0 z-[var(--z-tooltip)] w-max max-w-[220px] rounded-lg border border-border bg-surface p-2.5 shadow-lg"
+          className="zd-tip-in pointer-events-none absolute left-0 top-0 z-[var(--z-tooltip)] w-max max-w-[220px] rounded-lg border border-border bg-surface p-2.5 shadow-lg"
         >
           <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Flag isoN={hovered.isoN} className="h-3.5 w-auto" />

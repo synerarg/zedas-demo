@@ -1,39 +1,45 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Sparkles, ArrowRight, Send, Loader2, Check, Database } from "lucide-react";
+import { Sparkles, ArrowRight, Send, Loader2, Check, Layers } from "lucide-react";
 import Reveal from "./reveal";
 import { Container } from "./primitives";
 import ContourField from "./contour-field";
+import Flag from "@/components/flag";
 
 // The project's furthest-reaching ambition (per the Head of Product): an AI
 // agent that, on top of the data ZEDAS keeps loading, can be asked in plain
-// language to simulate how global value chains shift with water availability —
-// and to take actions over the data. This section dramatizes that as a looping
-// chat demo, and is honestly flagged as a not-yet-live preview.
+// language to reason over the indicators and act on the panel. This section
+// dramatizes that as a looping chat demo and is flagged as a not-yet-live
+// preview. Crucially, the demo speaks the panel's OWN language: every figure
+// below is the real pilot value from src/lib/zedas-data.ts, shown with the same
+// indicators (Renewable Water, Water Stress / SDG 6.4.2) and sources the map uses.
 
 const PROMPT =
-  "If water availability drops 20% in northern Argentina, where should textile manufacturing relocate?";
+  "For water-intensive production, which pilot countries pair the most renewable water with no water stress?";
 
-// The value chain the agent re-evaluates; one node is the simulated move.
-const CHAIN = [
-  { node: "Inputs", moved: false },
-  { node: "Processing", moved: false },
-  { node: "Manufacturing", moved: true },
-  { node: "Export", moved: false },
+// Result rows — the correct top 3 (by renewable water, among the "No stress"
+// SDG band) across the 16 pilot countries. Values verbatim from zedas-data.ts,
+// formatted as the panel formats them. Do not edit without re-checking the data.
+const MATCHES = [
+  { isoN: 76, name: "Brazil", renewable: "8,647 km³/yr", stress: "1.5%" },
+  { isoN: 170, name: "Colombia", renewable: "2,360 km³/yr", stress: "4.4%" },
+  { isoN: 704, name: "Vietnam", renewable: "884 km³/yr", stress: "18.1%" },
 ];
+// SDG 6.4.2 "No stress" band colour (zedas-data.ts → SDG_BANDS).
+const NO_STRESS = "#1F9E7A";
 
 const CAPABILITIES = [
-  "Ask in plain language — the agent reads the data and runs the simulation for you.",
-  "Every answer is grounded in the same six-dimension assessment behind ZEDAS.",
-  "Take action: save scenarios, adjust variables, and update the panel in place.",
+  "Ask in plain language — the agent reads the live indicators and does the analysis for you.",
+  "Grounded in the map's own pilot dataset: 16 countries, FAO AQUASTAT and SDG 6.4.2.",
+  "Acts on the panel — switches indicator layers, compares countries, surfaces candidates.",
 ];
 
 type Action = "idle" | "running" | "done";
 
 // Discrete phases of the looping conversation. Initial state is the FINAL frame
 // so SSR, reduced-motion, and pre-hydration renders show the full exchange; the
-// animation (only when in view + motion allowed) resets and replays from empty.
+// animation (only when motion is allowed) resets and replays from empty.
 interface Frame {
   typed: string;
   sent: boolean;
@@ -80,9 +86,9 @@ export default function Intelligence() {
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-deep-muted">
             The project&rsquo;s furthest ambition: as data accumulates across
             territories, you&rsquo;ll simply ask ZEDAS Intelligence a question —
-            and it will simulate how global value chains shift with water
-            availability and the other variables that decide where production can
-            sustainably happen, acting on the data as it goes.
+            and it will reason over the same live indicators behind the map
+            (water availability, stress, productivity) to show how and where
+            global value chains can shift toward water-resilient ground.
           </p>
 
           <ul className="mt-8 space-y-3.5">
@@ -134,6 +140,7 @@ function ChatDemo() {
 
     let cancelled = false;
     let running = false;
+    let visible = true;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const set = (patch: Partial<Frame>) => setFrame((f) => ({ ...f, ...patch }));
 
@@ -141,13 +148,17 @@ function ChatDemo() {
       if (running) return;
       running = true;
       while (!cancelled) {
+        // Pause at the top of the loop while the demo is scrolled out of view.
+        while (!visible && !cancelled) await sleep(250);
+        if (cancelled) break;
+
         setFrame(EMPTY);
         await sleep(800); if (cancelled) break;
 
         // Typewriter the prompt into the input.
         for (let i = 1; i <= PROMPT.length; i++) {
           set({ typed: PROMPT.slice(0, i) });
-          await sleep(26); if (cancelled) break;
+          await sleep(24); if (cancelled) break;
         }
         if (cancelled) break;
         await sleep(550); if (cancelled) break;
@@ -156,7 +167,7 @@ function ChatDemo() {
         set({ sent: true, typed: "" });
         await sleep(650); if (cancelled) break;
 
-        // Agent thinks, then runs the simulation, then resolves it.
+        // Agent thinks, then queries the dataset, then resolves the result.
         set({ thinking: true });
         await sleep(1050); if (cancelled) break;
         set({ thinking: false, action: "running" });
@@ -166,22 +177,21 @@ function ChatDemo() {
         set({ answered: true });
 
         // Hold the completed exchange, then loop.
-        await sleep(5200); if (cancelled) break;
+        await sleep(5600); if (cancelled) break;
       }
       running = false;
     }
 
-    // Only animate while the demo is on screen; restart cleanly each time.
+    // Start immediately; the observer only pauses/resumes the loop as the demo
+    // enters and leaves the viewport (so it doesn't run unseen, but never
+    // depends on the observer firing in order to start).
+    play();
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          cancelled = false;
-          play();
-        } else {
-          cancelled = true;
-        }
+        visible = entry.isIntersecting;
       },
-      { threshold: 0.35 },
+      { threshold: 0.25 },
     );
     io.observe(el);
 
@@ -200,10 +210,11 @@ function ChatDemo() {
     >
       {/* Accessible static summary; the animated transcript below is decorative. */}
       <p className="sr-only">
-        A demonstration of asking the ZEDAS Intelligence agent where textile
-        manufacturing should relocate if water availability drops 20% in northern
-        Argentina. The agent runs a value-chain simulation and recommends moving
-        manufacturing to a water-resilient zone. Illustrative preview.
+        A demonstration of asking the ZEDAS Intelligence agent which pilot
+        countries pair the most renewable water with no water stress. The agent
+        queries the pilot dataset and returns Brazil, Colombia, and Vietnam with
+        their renewable-water and water-stress values from FAO AQUASTAT and SDG
+        6.4.2. Illustrative preview of a feature that is not yet live.
       </p>
 
       <div aria-hidden>
@@ -223,11 +234,11 @@ function ChatDemo() {
         </div>
 
         {/* Transcript */}
-        <div className="flex h-[21rem] flex-col justify-end gap-3 overflow-hidden px-4 py-4 sm:h-[22rem] sm:px-5">
+        <div className="flex h-[22rem] flex-col justify-end gap-3 overflow-hidden px-4 py-4 sm:h-[23rem] sm:px-5">
           {/* User message */}
           {frame.sent && (
             <div className="zd-rise flex justify-end">
-              <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-deep-accent/15 px-3.5 py-2.5 text-[13px] leading-relaxed text-deep-foreground ring-1 ring-inset ring-deep-accent/20">
+              <p className="max-w-[88%] rounded-2xl rounded-br-sm bg-deep-accent/15 px-3.5 py-2.5 text-[13px] leading-relaxed text-deep-foreground ring-1 ring-inset ring-deep-accent/20">
                 {PROMPT}
               </p>
             </div>
@@ -242,7 +253,7 @@ function ChatDemo() {
             </div>
           )}
 
-          {/* Agent: action card (the simulation it runs over the data) */}
+          {/* Agent: action card — the query it runs over the pilot dataset */}
           {frame.action !== "idle" && (
             <div className="zd-rise rounded-xl border border-deep-border bg-deep/50 p-3.5">
               <div className="flex items-center gap-2">
@@ -250,7 +261,7 @@ function ChatDemo() {
                   <>
                     <Loader2 className="size-3.5 animate-spin text-deep-accent" />
                     <span className="zd-meas text-[10px] uppercase tracking-[0.14em] text-deep-foreground/80">
-                      Running simulation
+                      Querying pilot dataset
                     </span>
                   </>
                 ) : (
@@ -259,7 +270,7 @@ function ChatDemo() {
                       <Check className="size-3" strokeWidth={3} />
                     </span>
                     <span className="zd-meas text-[10px] uppercase tracking-[0.14em] text-deep-accent">
-                      Simulation complete
+                      3 of 16 — No&nbsp;stress, ranked by renewable water
                     </span>
                   </>
                 )}
@@ -267,50 +278,52 @@ function ChatDemo() {
 
               {frame.action === "done" && (
                 <div className="zd-rise mt-3">
-                  <ol className="flex items-stretch gap-1.5">
-                    {CHAIN.map((c, i) => (
-                      <li key={c.node} className="flex flex-1 items-center gap-1.5">
-                        <div
-                          className={`flex-1 rounded-md border px-1.5 py-1.5 text-center text-[10.5px] font-medium leading-tight ${
-                            c.moved
-                              ? "border-deep-accent/50 bg-deep-accent/10 text-deep-foreground"
-                              : "border-deep-border bg-deep/40 text-deep-foreground/70"
-                          }`}
-                        >
-                          {c.node}
-                          {c.moved && (
-                            <span className="zd-meas mt-0.5 block text-[8px] uppercase tracking-[0.1em] text-deep-accent">
-                              Moved
-                            </span>
-                          )}
-                        </div>
-                        {i < CHAIN.length - 1 && (
-                          <ArrowRight className="size-3 shrink-0 text-deep-muted" />
-                        )}
+                  <ul className="space-y-1.5">
+                    {MATCHES.map((m) => (
+                      <li
+                        key={m.isoN}
+                        className="flex items-center gap-2.5 rounded-lg border border-deep-border bg-deep/40 px-2.5 py-2"
+                      >
+                        <Flag isoN={m.isoN} className="h-3 w-auto rounded-[2px]" />
+                        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-deep-foreground">
+                          {m.name}
+                        </span>
+                        <span className="zd-meas tnum text-[11px] text-deep-foreground/75">
+                          {m.renewable}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-deep-border px-1.5 py-0.5">
+                          <span
+                            aria-hidden
+                            className="size-1.5 rounded-full"
+                            style={{ backgroundColor: NO_STRESS }}
+                          />
+                          <span className="zd-meas tnum text-[10px] text-deep-foreground/70">
+                            {m.stress}
+                          </span>
+                        </span>
                       </li>
                     ))}
-                  </ol>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    <Metric label="Drought exposure" value="↓ 38%" />
-                    <Metric label="Export reach" value="preserved" />
-                  </div>
+                  </ul>
+                  <p className="zd-meas mt-2.5 text-[9.5px] uppercase tracking-[0.12em] text-deep-muted/80">
+                    Source · FAO AQUASTAT · SDG 6.4.2 · pilot dataset
+                  </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* Agent: natural-language answer + an action it offers to take */}
+          {/* Agent: natural-language answer + a real panel action it offers */}
           {frame.answered && (
             <div className="zd-rise">
-              <p className="max-w-[92%] rounded-2xl rounded-bl-sm bg-deep/60 px-3.5 py-2.5 text-[13px] leading-relaxed text-deep-foreground/90 ring-1 ring-inset ring-deep-border">
-                Manufacturing carries the highest water exposure. Moving it to a
-                high-availability, high-quality zone cuts drought risk while
-                keeping export reach.
+              <p className="max-w-[94%] rounded-2xl rounded-bl-sm bg-deep/60 px-3.5 py-2.5 text-[13px] leading-relaxed text-deep-foreground/90 ring-1 ring-inset ring-deep-border">
+                Brazil leads by a wide margin — 8,647&nbsp;km³/yr at just 1.5%
+                stress. Colombia and Vietnam follow, both still in the No-stress
+                band — strong ground for water-intensive production.
               </p>
               <div className="mt-2 flex items-center gap-2 pl-1">
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-deep-accent/30 bg-deep-accent/10 px-2.5 py-1 text-[11px] font-medium text-deep-accent">
-                  <Database className="size-3" />
-                  Save scenario to panel
+                  <Layers className="size-3" />
+                  Set map layer · Water Stress
                 </span>
               </div>
             </div>
@@ -327,7 +340,7 @@ function ChatDemo() {
                   <span className="zd-caret ml-px inline-block h-3.5 w-px translate-y-0.5 bg-deep-accent align-middle" />
                 </>
               ) : (
-                <span className="text-deep-muted">Ask the agent to simulate a scenario…</span>
+                <span className="text-deep-muted">Ask about the pilot countries and indicators…</span>
               )}
             </span>
             <span
@@ -350,14 +363,5 @@ function Dot({ delay }: { delay: string }) {
       className="size-1.5 animate-bounce rounded-full bg-deep-muted"
       style={{ animationDelay: delay, animationDuration: "1s" }}
     />
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="inline-flex items-baseline gap-1.5 rounded-md border border-deep-border bg-deep/40 px-2 py-1">
-      <span className="text-[10.5px] text-deep-muted">{label}</span>
-      <span className="zd-meas text-[11px] font-semibold text-deep-accent">{value}</span>
-    </span>
   );
 }

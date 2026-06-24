@@ -1,16 +1,26 @@
 import Link from "next/link";
-import { Container, FuturePageLink } from "./primitives";
+import { Send } from "lucide-react";
+import { Container } from "./primitives";
+import { whatsappHref } from "@/lib/contact";
 
-const FUTURE_PAGES = [
-  "About ZEDAS",
-  "The Water Century",
-  "Methodology",
-  "Pilot Countries",
-  "Focal Points",
-  "Partners",
-  "Knowledge Hub",
-  "Contact",
+const WHATSAPP_HREF = whatsappHref();
+
+// Real, in-page destinations (the sections that exist today) plus the map page.
+const EXPLORE_LINKS = [
+  { href: "/map", label: "Global Map", page: true },
+  { href: "#about", label: "About ZEDAS" },
+  { href: "#pilot", label: "The Pilot" },
+  { href: "#why", label: "Why ZEDAS" },
 ];
+
+const PROJECT_LINKS = [
+  { href: "#methodology", label: "Methodology" },
+  { href: "#intelligence", label: "Intelligence" },
+  { href: "#acknowledgement", label: "Acknowledgement" },
+];
+
+const LINK_CLASS =
+  "rounded-md text-sm font-medium text-foreground transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 export default function SiteFooter() {
   return (
@@ -44,33 +54,46 @@ export default function SiteFooter() {
               Explore
             </h2>
             <ul className="mt-4 flex flex-col gap-3">
-              <li>
-                <Link
-                  href="/map"
-                  className="rounded-md text-sm font-medium text-foreground transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  Global Map
-                </Link>
-              </li>
-              {FUTURE_PAGES.slice(0, 4).map((p) => (
-                <li key={p}>
-                  <FuturePageLink>{p}</FuturePageLink>
+              {EXPLORE_LINKS.map((l) => (
+                <li key={l.href}>
+                  {l.page ? (
+                    <Link href={l.href} className={LINK_CLASS}>
+                      {l.label}
+                    </Link>
+                  ) : (
+                    <a href={l.href} className={LINK_CLASS}>
+                      {l.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* More */}
+          {/* Project */}
           <div className="lg:col-span-4">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-              Coming soon
+              Project
             </h2>
             <ul className="mt-4 flex flex-col gap-3">
-              {FUTURE_PAGES.slice(4).map((p) => (
-                <li key={p}>
-                  <FuturePageLink>{p}</FuturePageLink>
+              {PROJECT_LINKS.map((l) => (
+                <li key={l.href}>
+                  <a href={l.href} className={LINK_CLASS}>
+                    {l.label}
+                  </a>
                 </li>
               ))}
+              <li>
+                <a
+                  href={WHATSAPP_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-foreground transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  <Send className="size-4 text-accent" aria-hidden />
+                  Contact on WhatsApp
+                </a>
+              </li>
             </ul>
           </div>
         </div>
