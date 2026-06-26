@@ -55,12 +55,12 @@ export default function Home() {
         <Hero />
         <About />
         <Pilot />
+        <PartnersMarquee />
         <ByTheNumbers />
         <WhyZedas />
         <Manifesto />
         <Methodology />
         <GlobalMap />
-        <PartnersMarquee />
         <Intelligence />
         <JoinBand />
         <Acknowledgement />
