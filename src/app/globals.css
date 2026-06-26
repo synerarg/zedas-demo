@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
-/* Manual dark mode driven by a `.dark` class on <html> (toggle + system default
-   resolved by the no-FOUC script in layout.tsx). */
+/* Light-only project: the `.dark` class is never applied to <html>, so this
+   class-based `dark:` variant never matches. Kept deliberately (rather than
+   switching to a media strategy) so any stray `dark:` utility simply no-ops and
+   the OS's prefers-color-scheme can never flip the site to dark. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Design tokens ──────────────────────────────────────────────────────────
@@ -43,38 +45,6 @@
   --deep-foreground: #e9f4f4;
   --deep-muted: #8fb0b2;
   --deep-border: #16363d;
-  --deep-accent: #2dd4bf;
-}
-
-.dark {
-  color-scheme: dark;
-
-  --background: #060d11; /* single near-black, faint teal cast */
-  --surface: #0b141a; /* a hair above the page; border carries the edge */
-  --surface-2: #111d24;
-  --foreground: #e8f0f1;
-  --muted: #8b9aa3;
-  --border: #1a2730;
-  --border-strong: #283942;
-  --ring: #2dd4bf;
-  --accent: #19a89b; /* desaturated tonal teal, not an invert */
-  --accent-foreground: #04110f;
-  --grid-line: #0e1a20;
-
-  --score-hq: #16a394;
-  --score-qc: #e0b23f;
-  --score-eff: #4b8fd4;
-  --score-risk: #d05a68;
-
-  --no-data: #2a2f36;
-  --map-stroke: #313c46;
-  --map-stroke-strong: #5a6976;
-
-  --deep: #04141a;
-  --deep-2: #082028;
-  --deep-foreground: #e9f4f4;
-  --deep-muted: #88a8aa;
-  --deep-border: #163138;
   --deep-accent: #2dd4bf;
 }
 
@@ -319,6 +289,18 @@
 }
 .zd-caret {
   animation: zd-caret-blink 1s steps(1) infinite;
+}
+
+/* ── Partner marquee ─────────────────────────────────────────────────────────
+   The seamless logo strip below the map. Its track holds two identical groups
+   and slides left by exactly one group width; because the two groups are an
+   exact copy, translateX(-50%) wraps with zero seam or jump. The component
+   pauses it on hover and, under reduced motion, hides it for a static centered
+   row instead (see components/landing/partners-marquee). GPU-only (transform). */
+@keyframes zedas-marquee {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* Soft accent glow used to seat content on the deep-water band. */

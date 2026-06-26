@@ -10,14 +10,12 @@ import {
   type IndicatorKey,
 } from "@/lib/zedas-data";
 import { CENTROIDS, clampCenter } from "@/lib/layers";
-import { useTheme } from "@/lib/use-theme";
 import type { MapPosition } from "./world-map";
 import LeftPanel from "./left-panel";
 import CountryDetail from "./country-detail";
 import CompareTray from "./compare-tray";
 import ComparisonView from "./comparison-view";
 import CountrySearch from "./country-search";
-import ThemeToggle from "./theme-toggle";
 
 const WorldMap = dynamic(() => import("./world-map"), {
   ssr: false,
@@ -42,7 +40,6 @@ function MapSkeleton() {
 }
 
 export default function ZedasApp() {
-  const { theme, toggle: toggleTheme } = useTheme();
   const [activeKey, setActiveKey] = useState<IndicatorKey>(DEFAULT_INDICATOR);
   const [position, setPosition] = useState<MapPosition>({
     coordinates: [0, 0],
@@ -136,7 +133,6 @@ export default function ZedasApp() {
       <div className="absolute inset-0 z-[var(--z-map)]">
         <WorldMap
           indicator={indicator}
-          theme={theme}
           position={position}
           onPositionChange={setPosition}
           onSelectCountry={handleMapSelect}
@@ -196,7 +192,6 @@ export default function ZedasApp() {
               <Search className="size-4" aria-hidden />
               <span className="hidden sm:inline">Search…</span>
             </button>
-            <ThemeToggle theme={theme} onToggle={toggleTheme} />
           </div>
         </div>
 

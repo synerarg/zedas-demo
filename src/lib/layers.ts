@@ -4,12 +4,13 @@
 
 import { geoEqualEarth } from "d3-geo";
 
-/** Theme-resolved fills for non-pilot geographies + strokes. Mirrors the
- *  --no-data / --map-stroke tokens in globals.css (kept here for synchronous,
+/** Fills for non-pilot geographies + strokes. Mirrors the --no-data /
+ *  --map-stroke light tokens in globals.css (kept here for synchronous,
  *  SSR-safe access when computing SVG fill attributes). */
 export const MAP_COLORS = {
-  light: { noData: "#d8dce0", stroke: "#c4cdd5", strokeStrong: "#8a99a6" },
-  dark: { noData: "#2a2f36", stroke: "#313c46", strokeStrong: "#5a6976" },
+  noData: "#d8dce0",
+  stroke: "#c4cdd5",
+  strokeStrong: "#8a99a6",
 } as const;
 
 /** Flag glyph (emoji) per pilot country, keyed by ISO numeric. Decorative. */

@@ -35,7 +35,6 @@ export interface MapPosition {
 
 interface WorldMapProps {
   indicator: Indicator;
-  theme: "light" | "dark";
   position: MapPosition;
   onPositionChange: (p: MapPosition) => void;
   onSelectCountry: (isoN: number) => void;
@@ -56,7 +55,6 @@ interface Hovered {
 
 export default function WorldMap({
   indicator,
-  theme,
   position,
   onPositionChange,
   onSelectCountry,
@@ -66,7 +64,7 @@ export default function WorldMap({
   comparisonFull = false,
 }: WorldMapProps) {
   const [hovered, setHovered] = useState<Hovered | null>(null);
-  const colors = MAP_COLORS[theme];
+  const colors = MAP_COLORS;
 
   // Tooltip positioning is handled imperatively (via refs) so following the
   // pointer never re-renders the card; the card content only re-renders when

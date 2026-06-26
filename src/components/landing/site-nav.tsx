@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
-import { useTheme } from "@/lib/use-theme";
-import ThemeToggle from "@/components/theme-toggle";
 
 // In-page sections that exist today.
 const NAV_LINKS = [
@@ -28,7 +26,6 @@ const FUTURE_PAGES = [
 ];
 
 export default function SiteNav() {
-  const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -79,7 +76,6 @@ export default function SiteNav() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 justify-self-end">
-          <ThemeToggle theme={theme} onToggle={toggle} />
           <Link
             href="/map"
             className="group hidden h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-semibold text-accent-foreground shadow-sm transition-[transform,background-color] duration-200 ease-[var(--ease-out-quart)] hover:bg-accent/90 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:inline-flex"

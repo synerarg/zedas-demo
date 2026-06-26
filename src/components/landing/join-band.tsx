@@ -18,7 +18,7 @@ export default function JoinBand() {
       <Container>
         <Reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-border bg-surface px-6 py-14 text-center shadow-[0_1px_0_0_var(--border)] sm:px-12 sm:py-20">
           <ContourField
-            className="pointer-events-none absolute inset-0 h-full w-full text-accent opacity-[0.07] dark:opacity-[0.12]"
+            className="pointer-events-none absolute inset-0 h-full w-full text-accent opacity-[0.07]"
           />
           <div className="relative">
             <Measure>Join the network</Measure>

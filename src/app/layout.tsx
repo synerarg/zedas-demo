@@ -50,29 +50,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#060d11" },
-  ],
+  themeColor: "#ffffff",
 };
-
-// Resolve the theme before first paint to avoid a flash / hydration mismatch.
-// Default to light; only go dark when the user has explicitly chosen it before
-// (saved in localStorage). The system prefers-color-scheme is intentionally ignored.
-const themeScript = `(function(){try{var t=localStorage.getItem('zedas-theme');var d=t==='dark';var e=document.documentElement;e.classList.toggle('dark',d);e.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${GeistSans.variable} h-full`}
-    >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
+    <html lang="en" className={`${GeistSans.variable} h-full`}>
       <body className="min-h-dvh">{children}</body>
     </html>
   );

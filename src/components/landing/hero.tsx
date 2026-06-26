@@ -49,7 +49,7 @@ export default function Hero() {
         <StripedPattern
           width={14}
           height={14}
-          className="text-accent opacity-[0.14] dark:opacity-[0.18]"
+          className="text-accent opacity-[0.14]"
         />
       </div>
       <div
